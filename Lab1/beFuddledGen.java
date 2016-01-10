@@ -19,14 +19,14 @@ public class BeFuddledGen {
     	int size = 0;
        	int jsonCount = 0;
        	File outputFile;
-
+       	BeFuddledGen game = new BeFuddledGen();
     	Scanner scan = new Scanner(System.in);
     	System.out.println("Input output file name: ");
     	outputFilename = scan.next();
     	System.out.println("Input number of JSON to generate: ");
     	size = scan.nextInt();
     	outputFile = new File(outputFilename);
-    	createData(size, outputFile);
+    	game.createData(size, outputFile);
 	}
 
 	private void createData(int size, File outputFile) {
@@ -34,7 +34,7 @@ public class BeFuddledGen {
 		int userId;
 		int gameCount = 1;
 		Random randomNum = new Random();
-		JSONObject jObj;
+		JSONObject jObj = null;
 		userIds = new boolean[max_users + 1];
 		gameRecord = new Hashtable<Integer, GameInfo>();
 
@@ -73,9 +73,14 @@ public class BeFuddledGen {
 			userId = randomNum.nextInt(max_users) + 1;
 		}
 		userIds[userId] = true;
-		jObj.append("user", "u" + userId);
-		jObj.append("game", gameId);
-		jObj.append("action", "GameStart");
+		try {
+			jObj.append("user", "u" + userId);
+			jObj.append("game", gameId);
+			jObj.append("action", "GameStart");
+		}
+		catch (JSONException e) {
+			System.out.println("could not append");
+		}
 		gameRecord.put(gameId, new GameInfo());
 		return jObj;
 	}
@@ -98,14 +103,19 @@ public class BeFuddledGen {
 		gameInfo = gameRecord.get(game);
 		gameInfo.addPoints(addPoints);
 		gameInfo.incrementCount();
-		coords.append("x", xCoord);
-		coords.append("y", yCoord);
+		try {
+			coords.append("x", xCoord);
+			coords.append("y", yCoord);
 
-		jObj.append("actionNumber", gameInfo.getCount());
-		jObj.append("actionType", "Move");
-		jObj.append("location", coords);
-		jObj.append("pointsAdded", addPoints);
-		jObj.append("points", gameInfo.getPoints());
+			jObj.append("actionNumber", gameInfo.getCount());
+			jObj.append("actionType", "Move");
+			jObj.append("location", coords);
+			jObj.append("pointsAdded", addPoints);
+			jObj.append("points", gameInfo.getPoints());
+		}
+		catch (JSONException e) {
+			System.out.println("could not append");
+		}
 		return jObj;
 	}
 
@@ -130,10 +140,15 @@ public class BeFuddledGen {
 		gameInfo.addPoints(addPoints);
 		gameInfo.incrementCount();
 
-		jObj.append("actionNumber", gameInfo.getCount());
-		jObj.append("actionType", "SpecialMove");
-		jObj.append("pointsAdded", addPoints);
-		jObj.append("points", gameInfo.getPoints());
+		try {
+			jObj.append("actionNumber", gameInfo.getCount());
+			jObj.append("actionType", "SpecialMove");
+			jObj.append("pointsAdded", addPoints);
+			jObj.append("points", gameInfo.getPoints());
+		}
+		catch (JSONException e) {
+			System.out.println("could not append");
+		}
 		return jObj;	
 	}
 
@@ -153,10 +168,15 @@ public class BeFuddledGen {
 		else {
 			status = "LOSS";
 		}
-		jObj.append("actionNumber", gameInfo.getCount());
-		jObj.append("actionType", "GameEnd");
-		jObj.append("points", gameInfo.getPoints());
-		jObj.append("gameStatus", status);
+		try {
+			jObj.append("actionNumber", gameInfo.getCount());
+			jObj.append("actionType", "GameEnd");
+			jObj.append("points", gameInfo.getPoints());
+			jObj.append("gameStatus", status);
+		}
+		catch (JSONException e) {
+			System.out.println("could not append");
+		}
 		return jObj;
 
 	}
@@ -172,9 +192,16 @@ public class BeFuddledGen {
 	}
 
 	private void printObj(JSONObject jObj, File outputFile) {
-		BufferedWriter output = new BufferedWriter(new FileWriter(outputFile));
+		BufferedWriter output;
 		try {
-			output.write(jObj.toString(3));
+			output = new BufferedWriter(new FileWriter(outputFile));
+			try {
+				System.out.println(jObj.toString(3));
+				output.write(jObj.toString(3));
+			}
+			catch (JSONException e) {
+				System.out.println("could to to string json object");
+			}
 		}
 		catch (IOException e) {
 			System.out.println("Unable to open file " + outputFile.getName());
