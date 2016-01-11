@@ -1,0 +1,28 @@
+Name: Tammy Kong (takong@calpoly.edu), Jordan Tang (jtang22@calpoly.edu)
+Course: CPE369-03
+Assignment: Lab 1-1, ThghtShreGen
+
+TO COMPILE:
+   A makefile is included, the "make" command should compile the program
+
+TO RUN:
+   In order to run, use "make runTS”
+
+INPUT:
+   When the program is executed, it will ask for the filename of the output file.
+   Once this is entered, it will then ask for the number of JSON objects to generate.
+   Lastly, it will ask for a word file for message generation. Input any txt file, else input “sense.txt”.
+
+
+COMMENTS:
+   1. For public messages, to generate mostly “subscribers” and “all” evenly, 
+      we added more number rolls to them (4 number rolls each). 
+      As for self/userId, we only did 1 roll (1/9 ~= 11.11%) to keep it under 20%.
+   
+   2. For protected messages, to generate mainly “subscribers’, we added
+      more number rolls to it (4 number rolls). 
+      As for self/userId, we only did 1 roll (1/5 = 20%).
+
+   3. For private message, they are only addressed to userId. Since we use a random
+      generator for the selected user, chances of userId is equal to the author of the message
+      is 1/10000.
