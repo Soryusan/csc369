@@ -2,11 +2,13 @@ public class GameInfo {
 	int points;
 	int actionCount;
 	boolean[] specialMoves;
+	String user;
 
-	public GameInfo() {
+	public GameInfo(String user) {
 		points = 0;
-		actionCount = 0;
+		actionCount = 1;
 		specialMoves = new boolean[4];
+		this.user = user;
 	}
 
 	public int addPoints(int value) {
@@ -31,5 +33,9 @@ public class GameInfo {
 
 	public boolean checkSpecialMove(int move) {
 		return specialMoves[move];
+	}
+
+	public String getUser() {
+		return user;
 	}
 }

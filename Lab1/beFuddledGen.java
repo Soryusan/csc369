@@ -25,18 +25,27 @@ public class BeFuddledGen {
     	outputFilename = scan.next();
     	System.out.println("Input number of JSON to generate: ");
     	size = scan.nextInt();
-    	outputFile = new File(outputFilename);
-    	game.createData(size, outputFile);
+    	scan.close();
+    	game.createData(size, outputFilename);
 	}
 
-	private void createData(int size, File outputFile) {
+	private void createData(int size, String outputFilename) {
 		int command;
 		int userId;
 		int gameCount = 1;
 		Random randomNum = new Random();
+		File outputFile = new File(outputFilename);
+		PrintWriter writer = null;
 		JSONObject jObj = null;
 		userIds = new boolean[max_users + 1];
 		gameRecord = new Hashtable<Integer, GameInfo>();
+
+		try {
+			writer = new PrintWriter(new FileWriter(outputFile));
+		}
+		catch (IOException e) {
+			System.out.println("Could not create file " + outputFilename);
+		}
 
 		for(int i = 0; i < size; i++) {
 			if(gameRecord.isEmpty()) {
@@ -60,13 +69,15 @@ public class BeFuddledGen {
 						break;
 				}
 			}
-			printObj(jObj, outputFile);
+			printObj(jObj, writer);
 		}
+		writer.close();
 	}
 
 	private JSONObject createNewUser(int gameId) {
 		int userId;
 		JSONObject jObj = new JSONObject();
+		JSONObject action = new JSONObject();
 		Random randomNum = new Random();
 		userId = randomNum.nextInt(max_users) + 1;
 		while(userIds[userId] == true) {
@@ -74,14 +85,16 @@ public class BeFuddledGen {
 		}
 		userIds[userId] = true;
 		try {
-			jObj.append("user", "u" + userId);
 			jObj.append("game", gameId);
-			jObj.append("action", "GameStart");
+			action.append("actionType", "gameStart");
+			action.append("actionNumber", 1);
+			jObj.append("action", action);
+			jObj.append("user", "u" + userId);
 		}
 		catch (JSONException e) {
 			System.out.println("could not append");
 		}
-		gameRecord.put(gameId, new GameInfo());
+		gameRecord.put(gameId, new GameInfo("u" + userId));
 		return jObj;
 	}
 
@@ -89,6 +102,7 @@ public class BeFuddledGen {
 		Random randomNum = new Random();
 		GameInfo gameInfo;
 		JSONObject jObj = new JSONObject();
+		JSONObject action = new JSONObject();
 		JSONObject coords = new JSONObject();
 		int game;
 		int xCoord;
@@ -104,14 +118,19 @@ public class BeFuddledGen {
 		gameInfo.addPoints(addPoints);
 		gameInfo.incrementCount();
 		try {
+			jObj.append("game", game);
+
 			coords.append("x", xCoord);
 			coords.append("y", yCoord);
+			
+			action.append("actionType", "Move");
+			action.append("actionNumber", gameInfo.getCount());
+			action.append("location", coords);
+			action.append("pointsAdded", addPoints);
+			action.append("points", gameInfo.getPoints());
 
-			jObj.append("actionNumber", gameInfo.getCount());
-			jObj.append("actionType", "Move");
-			jObj.append("location", coords);
-			jObj.append("pointsAdded", addPoints);
-			jObj.append("points", gameInfo.getPoints());
+			jObj.append("action", action);
+			jObj.append("user", gameInfo.getUser());
 		}
 		catch (JSONException e) {
 			System.out.println("could not append");
@@ -123,6 +142,7 @@ public class BeFuddledGen {
 		Random randomNum = new Random();
 		GameInfo gameInfo;
 		JSONObject jObj = new JSONObject();
+		JSONObject action = new JSONObject();
 		int game;
 		int addPoints;
 		int special;
@@ -141,10 +161,15 @@ public class BeFuddledGen {
 		gameInfo.incrementCount();
 
 		try {
-			jObj.append("actionNumber", gameInfo.getCount());
-			jObj.append("actionType", "SpecialMove");
-			jObj.append("pointsAdded", addPoints);
-			jObj.append("points", gameInfo.getPoints());
+			jObj.append("game", game);
+
+			action.append("actionType", "specialMove");
+			action.append("actionNumber", gameInfo.getCount());
+			action.append("pointsAdded", addPoints);
+			action.append("points", gameInfo.getPoints());
+
+			jObj.append("action", action);
+			jObj.append("user", gameInfo.getUser());
 		}
 		catch (JSONException e) {
 			System.out.println("could not append");
@@ -156,6 +181,7 @@ public class BeFuddledGen {
 		Random randomNum = new Random();
 		GameInfo gameInfo;
 		JSONObject jObj = new JSONObject();
+		JSONObject action = new JSONObject();
 		int game;
 		String status;
 
@@ -169,10 +195,16 @@ public class BeFuddledGen {
 			status = "LOSS";
 		}
 		try {
-			jObj.append("actionNumber", gameInfo.getCount());
-			jObj.append("actionType", "GameEnd");
-			jObj.append("points", gameInfo.getPoints());
-			jObj.append("gameStatus", status);
+			jObj.append("game", game);
+
+			action.append("actionType", "gameEnd");
+			action.append("gameStatus", status);
+			action.append("actionNumber", gameInfo.getCount());
+			action.append("points", gameInfo.getPoints());
+
+			jObj.append("action", action);
+			jObj.append("user", gameInfo.getUser());
+			gameRecord.remove(game);
 		}
 		catch (JSONException e) {
 			System.out.println("could not append");
@@ -191,20 +223,14 @@ public class BeFuddledGen {
 		return ranGame;
 	}
 
-	private void printObj(JSONObject jObj, File outputFile) {
-		BufferedWriter output;
+	private void printObj(JSONObject jObj, PrintWriter writer) {
 		try {
-			output = new BufferedWriter(new FileWriter(outputFile));
-			try {
-				System.out.println(jObj.toString(3));
-				output.write(jObj.toString(3));
-			}
-			catch (JSONException e) {
-				System.out.println("could to to string json object");
-			}
+			//System.out.println(jObj.toString(3));
+			writer.print(jObj.toString(3));
+			writer.print("\n");
 		}
-		catch (IOException e) {
-			System.out.println("Unable to open file " + outputFile.getName());
+		catch (JSONException e) {
+			System.out.println("could to to string json object");
 		}
 
 	}
