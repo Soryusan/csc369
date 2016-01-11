@@ -1,0 +1,9 @@
+TO COMPILE:
+	A makefile is included, the "make" command should compile the program
+TO RUN:
+	In order to run, use "make runBF"
+INPUT:
+	When the program is executed, it will ask for the filename of the output file.
+	Once this is entered, it will then ask for the number of JSON objects to generate.
+
+In order to generate games that favors moves over other actions, we made more number roll into a move command than other commands.
