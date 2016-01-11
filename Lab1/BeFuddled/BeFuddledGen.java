@@ -47,9 +47,14 @@ public class BeFuddledGen {
 			System.out.println("Could not create file " + outputFilename);
 		}
 
+		writer.write("[\n");
+
 		for(int i = 0; i < size; i++) {
 			if(gameRecord.isEmpty()) {
 				jObj = createNewUser(gameCount++);
+			}
+			else if(gameRecord.size() == max_users) {
+				jObj = endGame(gameCount);
 			}
 			else {
 				command = randomNum.nextInt(9);
@@ -74,7 +79,14 @@ public class BeFuddledGen {
 				}
 			}
 			printObj(jObj, writer);
+			if(i != (size - 1)) {
+				writer.write(",\n");
+			}
+			else {
+				writer.write("\n");
+			}
 		}
+		writer.write("]");
 		writer.close();
 	}
 
@@ -98,7 +110,7 @@ public class BeFuddledGen {
 		catch (JSONException e) {
 			System.out.println("could not put");
 		}
-		gameRecord.put(gameId, new GameInfo("u" + userId));
+		gameRecord.put(gameId, new GameInfo("u" + userId, userId));
 		return jObj;
 	}
 
@@ -153,6 +165,10 @@ public class BeFuddledGen {
 		//Gets random number to denote which game to use action on
 		game = getRandomGame(gameCount);
 		gameInfo = gameRecord.get(game);
+		//Checks if all specials are used
+		if(gameInfo.checkSpecial()) {
+			return moveUser(gameCount);
+		}
 		//Gets random number to denote which special move to use
 		special = randomNum.nextInt(4);
 		while(gameInfo.checkSpecialMove(special)) {
@@ -208,6 +224,7 @@ public class BeFuddledGen {
 
 			jObj.put("action", action);
 			jObj.put("user", gameInfo.getUser());
+			userIds[gameInfo.getId()] = false;
 			gameRecord.remove(game);
 		}
 		catch (JSONException e) {
@@ -231,7 +248,6 @@ public class BeFuddledGen {
 		try {
 			//System.out.println(jObj.toString(3));
 			writer.print(jObj.toString(3));
-			writer.print("\n");
 		}
 		catch (JSONException e) {
 			System.out.println("could to to string json object");

@@ -3,12 +3,16 @@ public class GameInfo {
 	int actionCount;
 	boolean[] specialMoves;
 	String user;
+	int id;
+	int specialCount;
 
-	public GameInfo(String user) {
+	public GameInfo(String user, int id) {
 		points = 0;
 		actionCount = 1;
 		specialMoves = new boolean[4];
 		this.user = user;
+		this.id = id;
+		specialCount = 0;
 	}
 
 	public int addPoints(int value) {
@@ -29,6 +33,7 @@ public class GameInfo {
 
 	public void useSpecialMove(int move) {
 		specialMoves[move] = true;
+		specialCount++;
 	}
 
 	public boolean checkSpecialMove(int move) {
@@ -37,5 +42,18 @@ public class GameInfo {
 
 	public String getUser() {
 		return user;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public boolean checkSpecial() {
+		if(specialCount == 4) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 }
