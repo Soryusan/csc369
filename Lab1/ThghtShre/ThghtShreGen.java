@@ -1,6 +1,6 @@
 import org.json.*;
-import java.util.Scanner;
-import java.util.Random;
+import java.util.*;
+import java.io.*;
 
 public class ThghtShreGen {
 
@@ -47,7 +47,7 @@ public class ThghtShreGen {
 		Random randomNum = new Random();
 		File outputFile = new File(outputFilename);
 		PrintWriter writer = null;
-		JSONObject = jObj = null;
+		JSONObject jObj = null;
 
 		try {
 			writer = new PrintWriter(new FileWriter(outputFile));
@@ -72,8 +72,11 @@ public class ThghtShreGen {
 			else if (command == 9) {
 				jObj = privateMessage(i, userId);
 			}
+
 			printObj(jObj, writer);
 		}
+		writer.close();
+
 	}
 
 	//subscribers, self, userId, all
@@ -81,20 +84,18 @@ public class ThghtShreGen {
 	//self or userId at most 20%
 	private JSONObject publicMessage(int messageId, int userId) {
 		int command = 0;
-		int userId = 0;
 		Random randomNum = new Random();
-		JSONObject jObj;
+		JSONObject jObj = null;
 
 		command = randomNum.nextInt(9);
-		userId = randomNum.nextInt(max_users) + 1;
 
 		//subscribers
 		if(command >= 0 && command <= 3) {
-			jObj = createObj(messageId, "u" + userId, "public", "subscribers")
+			jObj = createObj(messageId, "u" + userId, "public", "subscribers");
 		}
 		//all
 		else if(command >= 4 && command <= 7) {
-			jObj = createObj(messageId, "u" + userId, "public", "all")
+			jObj = createObj(messageId, "u" + userId, "public", "all");
 
 		}
 		//userId
@@ -111,11 +112,11 @@ public class ThghtShreGen {
 	private JSONObject protectedMessage(int messageId, int userId) {
 		Random randomNum = new Random();
 		int command = randomNum.nextInt(5);
-		JSONObject jObj;
+		JSONObject jObj = null;
 
 		//subscribers
 		if(command >= 0 && command <= 3) {
-			jObj = createObj(messageId, "u" + userId, "protected", "subscribers")
+			jObj = createObj(messageId, "u" + userId, "protected", "subscribers");
 		}
 		else if (command == 4) {
 			jObj = createObj(messageId, "u" + userId, "protected", "u" + randomNum.nextInt(max_users) + 1);
@@ -135,11 +136,11 @@ public class ThghtShreGen {
 	private JSONObject createObj(int messageId, String userId, String status, String recepient) {
 		JSONObject jObj = new JSONObject();
 		try {
-			jObj.append("messageId", messageId);
-			jObj.append("user", userId);
-			jObj.append("status", status);
-			jObj.append("recepient", recepient);
-			jObj.append("text", createTextMessage());
+			jObj.put("messageId", messageId);
+			jObj.put("user", userId);
+			jObj.put("status", status);
+			jObj.put("recepient", recepient);
+			jObj.put("text", createTextMessage());
 
 		}
 		catch (JSONException e) {
@@ -150,11 +151,18 @@ public class ThghtShreGen {
 
 	private void generateText(String wordFile) {
 		File file = new File(wordFile);
-		Scanner scan = new Scanner(file);
+		Scanner scan;
 		englishText = new ArrayList<String>();
 
-		while(scan.hasNext() == true) {
-			englishText.add(scan.next());
+		try {
+			scan = new Scanner(file);
+
+			while(scan.hasNext() == true) {
+				englishText.add(scan.next());
+			}
+		}
+		catch (FileNotFoundException e) {
+			System.out.println("Could not find file " + wordFile);
 		}
 
 	}
@@ -166,7 +174,7 @@ public class ThghtShreGen {
 		String textMessage = "";
 		for(int ndx = 0; ndx < numText; ndx++) {
 			num = randomNum.nextInt(englishText.size()) + 1;
-			textMessage += englishText.get(num);
+			textMessage += englishText.get(num) + " ";
 		}
 
 		return textMessage;
@@ -174,7 +182,7 @@ public class ThghtShreGen {
 
 	private void printObj(JSONObject jObj, PrintWriter writer) {
 		try {
-			//System.out.println(jObj.toString(3));
+			System.out.println(jObj.toString(3));
 			writer.print(jObj.toString(3));
 			writer.print("\n");
 		}
