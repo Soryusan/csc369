@@ -51,6 +51,8 @@ public class ThghtShreGen {
 
 		try {
 			writer = new PrintWriter(new FileWriter(outputFile));
+			writer.print("[\n");
+
 		}
 		catch(IOException e) {
 			System.out.println("Could not create file " + outputFilename);
@@ -74,9 +76,15 @@ public class ThghtShreGen {
 			}
 
 			printObj(jObj, writer);
+
+			if (i < size - 1) {
+				writer.print(",\n");
+			}
+			else {
+				writer.print("\n]");
+			}
 		}
 		writer.close();
-
 	}
 
 	//subscribers, self, userId, all
@@ -139,7 +147,7 @@ public class ThghtShreGen {
 			jObj.put("messageId", messageId);
 			jObj.put("user", userId);
 			jObj.put("status", status);
-			jObj.put("recepient", recepient);
+			jObj.put("recipient", recepient);
 			jObj.put("text", createTextMessage());
 
 		}
@@ -173,7 +181,7 @@ public class ThghtShreGen {
 		int num = 0;
 		String textMessage = "";
 		for(int ndx = 0; ndx < numText; ndx++) {
-			num = randomNum.nextInt(englishText.size()) + 1;
+			num = randomNum.nextInt(englishText.size());
 			textMessage += englishText.get(num) + " ";
 		}
 
@@ -182,9 +190,8 @@ public class ThghtShreGen {
 
 	private void printObj(JSONObject jObj, PrintWriter writer) {
 		try {
-			System.out.println(jObj.toString(3));
+			//System.out.println(jObj.toString(3));
 			writer.print(jObj.toString(3));
-			writer.print("\n");
 		}
 		catch (JSONException e) {
 			System.out.println("could to to string json object");
