@@ -52,19 +52,22 @@ public class BeFuddledGen {
 				jObj = createNewUser(gameCount++);
 			}
 			else {
-				command = randomNum.nextInt(5);
+				command = randomNum.nextInt(8);
 				switch(command) {
 					case 0:
 						jObj = createNewUser(gameCount++);
 						break;
 					case 1:
 					case 2:
+					case 3:
+					case 4:
+					case 5:
 						jObj = moveUser(gameCount);
 						break;
-					case 3:
+					case 6:
 						jObj = specialMove(gameCount);
 						break;
-					case 4:
+					case 7:
 						jObj = endGame(gameCount);
 						break;
 				}
