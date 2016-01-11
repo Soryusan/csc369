@@ -89,14 +89,14 @@ public class BeFuddledGen {
 		}
 		userIds[userId] = true;
 		try {
-			jObj.append("game", gameId);
-			action.append("actionType", "gameStart");
-			action.append("actionNumber", 1);
-			jObj.append("action", action);
-			jObj.append("user", "u" + userId);
+			jObj.put("game", gameId);
+			action.put("actionType", "gameStart");
+			action.put("actionNumber", 1);
+			jObj.put("action", action);
+			jObj.put("user", "u" + userId);
 		}
 		catch (JSONException e) {
-			System.out.println("could not append");
+			System.out.println("could not put");
 		}
 		gameRecord.put(gameId, new GameInfo("u" + userId));
 		return jObj;
@@ -122,22 +122,22 @@ public class BeFuddledGen {
 		gameInfo.addPoints(addPoints);
 		gameInfo.incrementCount();
 		try {
-			jObj.append("game", game);
+			jObj.put("game", game);
 
-			coords.append("x", xCoord);
-			coords.append("y", yCoord);
+			coords.put("x", xCoord);
+			coords.put("y", yCoord);
 			
-			action.append("actionType", "Move");
-			action.append("actionNumber", gameInfo.getCount());
-			action.append("location", coords);
-			action.append("pointsAdded", addPoints);
-			action.append("points", gameInfo.getPoints());
+			action.put("actionType", "Move");
+			action.put("actionNumber", gameInfo.getCount());
+			action.put("location", coords);
+			action.put("pointsAdded", addPoints);
+			action.put("points", gameInfo.getPoints());
 
-			jObj.append("action", action);
-			jObj.append("user", gameInfo.getUser());
+			jObj.put("action", action);
+			jObj.put("user", gameInfo.getUser());
 		}
 		catch (JSONException e) {
-			System.out.println("could not append");
+			System.out.println("could not put");
 		}
 		return jObj;
 	}
@@ -165,18 +165,18 @@ public class BeFuddledGen {
 		gameInfo.incrementCount();
 
 		try {
-			jObj.append("game", game);
+			jObj.put("game", game);
 
-			action.append("actionType", "specialMove");
-			action.append("actionNumber", gameInfo.getCount());
-			action.append("pointsAdded", addPoints);
-			action.append("points", gameInfo.getPoints());
+			action.put("actionType", "specialMove");
+			action.put("actionNumber", gameInfo.getCount());
+			action.put("pointsAdded", addPoints);
+			action.put("points", gameInfo.getPoints());
 
-			jObj.append("action", action);
-			jObj.append("user", gameInfo.getUser());
+			jObj.put("action", action);
+			jObj.put("user", gameInfo.getUser());
 		}
 		catch (JSONException e) {
-			System.out.println("could not append");
+			System.out.println("could not put");
 		}
 		return jObj;	
 	}
@@ -199,19 +199,19 @@ public class BeFuddledGen {
 			status = "LOSS";
 		}
 		try {
-			jObj.append("game", game);
+			jObj.put("game", game);
 
-			action.append("actionType", "gameEnd");
-			action.append("gameStatus", status);
-			action.append("actionNumber", gameInfo.getCount());
-			action.append("points", gameInfo.getPoints());
+			action.put("actionType", "gameEnd");
+			action.put("gameStatus", status);
+			action.put("actionNumber", gameInfo.getCount());
+			action.put("points", gameInfo.getPoints());
 
-			jObj.append("action", action);
-			jObj.append("user", gameInfo.getUser());
+			jObj.put("action", action);
+			jObj.put("user", gameInfo.getUser());
 			gameRecord.remove(game);
 		}
 		catch (JSONException e) {
-			System.out.println("could not append");
+			System.out.println("could not put");
 		}
 		return jObj;
 
