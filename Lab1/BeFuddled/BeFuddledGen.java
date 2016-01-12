@@ -57,7 +57,7 @@ public class BeFuddledGen {
 				jObj = endGame(gameCount);
 			}
 			else {
-				command = randomNum.nextInt(9);
+				command = randomNum.nextInt(10);
 				switch(command) {
 					case 0:
 						jObj = createNewUser(gameCount++);
@@ -67,13 +67,14 @@ public class BeFuddledGen {
 					case 3:
 					case 4:
 					case 5:
+					case 6:
 						jObj = moveUser(gameCount);
 						break;
-					case 6:
 					case 7:
+					case 8:
 						jObj = specialMove(gameCount);
 						break;
-					case 8:
+					case 9:
 						jObj = endGame(gameCount);
 						break;
 				}
@@ -208,7 +209,10 @@ public class BeFuddledGen {
 		game = getRandomGame(gameCount);
 		gameInfo = gameRecord.get(game);
 		gameInfo.incrementCount();
-		if(gameInfo.getPoints() > 150) {
+		if(gameInfo.getCount() < 9) {
+			return moveUser(gameCount);
+		}
+		if(gameInfo.getPoints() > 75) {
 			status = "WIN";
 		}
 		else {
