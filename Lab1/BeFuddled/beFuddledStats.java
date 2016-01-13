@@ -2,6 +2,7 @@ import org.json.JSONObject;
 import org.json.*;
 import java.util.*;
 import java.io.*;
+import java.awt.*;
 
 public class beFuddledStats {
 
@@ -12,6 +13,8 @@ public class beFuddledStats {
 		Scanner scanner = new Scanner(System.in);
 		JSONObject current;
 		JSONObject action;
+		JSONObject jObj = new JSONObject();
+		JSONObject temp;
 		ArrayList<Integer> trackPoints = new ArrayList<Integer>();
 		ArrayList<Integer> trackPointsWon = new ArrayList<Integer>();
 		ArrayList<Integer> trackPointsLoss = new ArrayList<Integer>();
@@ -28,6 +31,7 @@ public class beFuddledStats {
 
 		int board[][] = new int[21][21];
 		int specialMoves[] = new int[4];
+		Point topTenSpaces[];
 
 		int startedGames = 0;
 		int completedGames = 0;
@@ -75,6 +79,16 @@ public class beFuddledStats {
 		System.out.println("Enter filename: ");
 		filename = scanner.next();
 
+		PrintWriter writer = null;
+		if(args.length >= 1) {
+			try {
+				writer = new PrintWriter(new FileWriter(new File(args[0])));
+			}
+			catch (IOException e) {
+				System.out.println("could not open file");
+			}
+		}
+
 		try {
 	  // JSONTokener is the org.json wrapper around any Reader object 
 			JSONTokener t = new JSONTokener(new FileReader(new File(filename)));
@@ -119,16 +133,16 @@ public class beFuddledStats {
 				}
 				else if(actionType.equals("specialMove")) {
 					String sMove = action.getString("move");
-					if(sMove == "Shuffle") {
+					if(sMove.equals("Shuffle")) {
 						specialMoves[0]++;
 					}
-					else if(sMove == "Clear") {
+					else if(sMove.equals("Clear")) {
 						specialMoves[1]++;
 					}
-					else if(sMove == "Invert") {
+					else if(sMove.equals("Invert")) {
 						specialMoves[2]++;
 					}
-					else if(sMove == "Rotate") {
+					else if(sMove.equals("Rotate")) {
 						specialMoves[3]++;
 					}
 				}
@@ -255,53 +269,123 @@ public class beFuddledStats {
 		stdDevMovesWon = calc.calcStdDev(averageMovesWon, trackMovesWon);
 		stdDevMovesLoss = calc.calcStdDev(averageMovesLoss, trackMovesLoss);
 
-		System.out.println("\n----- Stats for BeFuddled Games -----\n");
-		System.out.println("\n-- Game Stats --\n");
-		System.out.println("Total Number of Games: " + startedGames);
-		System.out.println("Total Number of Completed Games: " + completedGames);
-		System.out.println("Total Number of Wins: " + usersWon);
-		System.out.println("Total Number of Losses: " + usersLoss);
+		topTenSpaces = calc.calcTopTenSpots(board);
 
-		System.out.println("\n-- Points --\n");
-		System.out.println("Total point average: " + averagePointsTotal);
-		System.out.println("Total standard deviation: " + stdDevPointsTotal);
-		System.out.println("Win point average: " + averagePointsWon);
-		System.out.println("Win standard deviation: " + stdDevPointsWon);
-		System.out.println("Loss point average: " + averagePointsLoss);
-		System.out.println("Loss standard deviation: " + stdDevPointsLoss);
+		try {
+			System.out.println("\n----- Stats for BeFuddled Games -----\n");
+			System.out.println("\n-- Game Stats --\n");
+			System.out.println("Total Number of Games: " + startedGames);
+			System.out.println("Total Number of Completed Games: " + completedGames);
+			System.out.println("Total Number of Wins: " + usersWon);
+			System.out.println("Total Number of Losses: " + usersLoss);
+			temp = new JSONObject();
+			temp.put("Total Games", startedGames);
+			temp.put("Total Completed Games", completedGames);
+			temp.put("Total Wins", usersWon);
+			temp.put("Total Losses", usersLoss);
+			jObj.put("Game Stats", temp);
 
-		System.out.println("\n-- Moves --\n");
-		System.out.println("Total moves average: " + averageMovesTotal);
-		System.out.println("Total standard deviation " + stdDevMovesTotal);
-		System.out.println("Win moves average: " + averageMovesWon);
-		System.out.println("Win standard deviation " + stdDevMovesWon);
-		System.out.println("Loss moves average: " + averageMovesLoss);
-		System.out.println("Loss standard deviation " + stdDevMovesLoss);
+			System.out.println("\n-- Points --\n");
+			System.out.println("Total point average: " + averagePointsTotal);
+			System.out.println("Total point standard deviation: " + stdDevPointsTotal);
+			System.out.println("Win point average: " + averagePointsWon);
+			System.out.println("Win point standard deviation: " + stdDevPointsWon);
+			System.out.println("Loss point average: " + averagePointsLoss);
+			System.out.println("Loss point standard deviation: " + stdDevPointsLoss);
+			temp = new JSONObject();
+			temp.put("Total point average", averagePointsTotal);
+			temp.put("Total point standard deviation", stdDevPointsTotal);
+			temp.put("Win point average", averagePointsWon);
+			temp.put("Win point standard deviation", stdDevPointsWon);
+			temp.put("Loss point average", averagePointsLoss);
+			temp.put("Loss point standard deviation", stdDevPointsLoss);
+			jObj.put("Points", temp);
 
-		System.out.println("\n-- Move Count Histogram --\n");
-		System.out.println("[0, 15): " + histMoves.get(0));
-		System.out.println("[15, 30): " + histMoves.get(15));
-		System.out.println("[30, 40): " + histMoves.get(30));
-		System.out.println("[40, 50): " + histMoves.get(40));
-		System.out.println("[50, 60): " + histMoves.get(50));
-		System.out.println("[60, 80): " + histMoves.get(60));
-		System.out.println("[80, ~): " + histMoves.get(80));
+			System.out.println("\n-- Moves --\n");
+			System.out.println("Total moves average: " + averageMovesTotal);
+			System.out.println("Total moves standard deviation " + stdDevMovesTotal);
+			System.out.println("Win moves average: " + averageMovesWon);
+			System.out.println("Win moves standard deviation " + stdDevMovesWon);
+			System.out.println("Loss moves average: " + averageMovesLoss);
+			System.out.println("Loss moves standard deviation " + stdDevMovesLoss);
+			temp = new JSONObject();
+			temp.put("Total moves average", averageMovesTotal);
+			temp.put("Total moves standard deviation", stdDevMovesTotal);
+			temp.put("Win move average", averageMovesWon);
+			temp.put("Win moves standard deviation", stdDevMovesWon);
+			temp.put("Loss moves average", averageMovesLoss);
+			temp.put("Loss moves standard deviation", stdDevMovesLoss);
+			jObj.put("Moves", temp);
 
-		System.out.println("\n-- Users --\n");
-		System.out.print("Total users who started at least one game: " + startedGames);
-		System.out.println("Total users who completed at least one game: " + completedGames);
-		System.out.print("Largest number of games a user started: " + largestStarted + ": ");
-		printUsers(usersMostStarted);
-		System.out.print("Largest number of games a user completed: " + largestCompleted + ": ");
-		printUsers(usersMostCompleted);
-		System.out.print("Largest number of wins a user had: " + largestWins + ": ");
-		printUsers(usersMostWins);
-		System.out.print("Largest number of losses a user had: " + largestLoss + ": ");
-		printUsers(usersMostLoss);
-		System.out.print("Longest game a user had: " + largestMoves);
-		printUsers(usersMostMoves);
+			System.out.println("\n-- Move Count Histogram --\n");
+			System.out.println("[0, 15): " + histMoves.get(0));
+			System.out.println("[15, 30): " + histMoves.get(15));
+			System.out.println("[30, 40): " + histMoves.get(30));
+			System.out.println("[40, 50): " + histMoves.get(40));
+			System.out.println("[50, 60): " + histMoves.get(50));
+			System.out.println("[60, 80): " + histMoves.get(60));
+			System.out.println("[80, ~): " + histMoves.get(80));
+			temp = new JSONObject();
+			temp.put("[0. 15)", histMoves.get(0));
+			temp.put("[15, 30)", histMoves.get(15));
+			temp.put("[30, 40)", histMoves.get(30));
+			temp.put("[40, 50)", histMoves.get(40));
+			temp.put("[50, 60)", histMoves.get(50));
+			temp.put("[60, 80)", histMoves.get(60));
+			temp.put("[80, ~)", histMoves.get(80));
+			jObj.put("Move Count Histogram", temp);
 
-		System.out.println();
+			System.out.println("\n-- Users --\n");
+			System.out.print("Total users who started at least one game: " + startedGames);
+			System.out.println("Total users who completed at least one game: " + completedGames);
+			System.out.print("Largest number of games a user started: " + largestStarted + ": ");
+			calc.printUsers(usersMostStarted);
+			System.out.print("Largest number of games a user completed: " + largestCompleted + ": ");
+			calc.printUsers(usersMostCompleted);
+			System.out.print("Largest number of wins a user had: " + largestWins + ": ");
+			calc.printUsers(usersMostWins);
+			System.out.print("Largest number of losses a user had: " + largestLoss + ": ");
+			calc.printUsers(usersMostLoss);
+			System.out.print("Longest game a user had: " + largestMoves + ": ");
+			calc.printUsers(usersMostMoves);
+			temp = new JSONObject();
+			temp.put("Total users started at least one game", startedGames);
+			temp.put("Total users completed at least one game", completedGames);
+			temp.put("Largest number of games a user started", largestStarted);
+			temp.put("Largest number of games a user completed", largestCompleted);
+			temp.put("Largest number of wins a user had", largestWins);
+			temp.put("Largest number of losses a user had", largestLoss);
+			temp.put("Longest game a user had", largestMoves);
+			jObj.put("Users", temp);
+
+			System.out.println("\n-- Most Popular Board Positions --\n");
+			for(int i = 0; i < 9; i++) {
+				System.out.print("(" + topTenSpaces[i].getX() + ", " + topTenSpaces[i].getY() + "), ");
+			}
+			System.out.println("(" + topTenSpaces[9].getX() + ", " + topTenSpaces[9].getY() + ")");
+
+			System.out.println("\n-- Special Moves --\n");
+			System.out.println("Shuffle: " + specialMoves[0]);
+			System.out.println("Clear: " + specialMoves[1]);
+			System.out.println("Invert: " + specialMoves[2]);
+			System.out.println("Rotate: " + specialMoves[3]);
+			temp = new JSONObject();
+			temp.put("Shuffle", specialMoves[0]);
+			temp.put("Clear", specialMoves[1]);
+			temp.put("Invert", specialMoves[2]);
+			temp.put("Rotate", specialMoves[3]);
+			jObj.put("Special Moves", temp);
+
+			System.out.println();
+
+			if(writer != null) {
+				writer.write(jObj.toString(3));
+				writer.close();
+			}
+		}
+		catch (JSONException e) {
+			System.out.println("bad");
+		}
 	}
 
 	private double calcMean(ArrayList<Integer> values) {
@@ -327,10 +411,38 @@ public class beFuddledStats {
 		return Math.sqrt(total / values.size());
 	}
 
-	private int[] calcTopTenSpots(int[][] board) {
+	private Point[] calcTopTenSpots(int[][] board) {
 		int[] ten = new int[10];
-
-		return ten;
+		Point[] coords = new Point[10];
+		int min = board[0][0];
+		int minNdx = 0;
+		for(int i = 0; i < 20; i++) {
+			for(int j = 0; j < 20; j++) {
+				if(j < 10 && i == 0) {
+					ten[j] = board[i][j];
+					coords[j] = new Point(i, j);
+					if(board[i][j] < min) {
+						min = board[i][j];
+						minNdx = j;
+					}
+				}
+				else {
+					if(board[i][j] > min) {
+						ten[minNdx] = board[i][j];
+						coords[minNdx] = new Point(i, j);
+						min = ten[0];
+						minNdx = 0;
+						for(int k = 1; k < ten.length; k++) {
+							if(ten[k] < min) {
+								min = ten[k];
+								minNdx = k;
+							}
+						}
+					}
+				}
+			}
+		}
+		return coords;
 	}
 	private void printUsers(ArrayList<String> list) {
 		for(int i = 0; i < list.size(); i++) {
