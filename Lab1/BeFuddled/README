@@ -5,8 +5,15 @@ Assignment: Lab 1-1, BeFuddled
 TO COMPILE:
    A makefile is included, the "make" command should compile the program
 
-TO RUN:
+TO RUN BEFUDDLED:
    In order to run, use "make runBF"
+
+TO RUN BEFUDDLED STATS:
+	In order to run the stats, use "make runBFstats"
+
+TO RUN BEFUDDLED STATS WITH AN OUTPUT FILE:
+	In order to run the stats, use "make runBFstatsOutput"
+	The output file will be named "outputStats.txt"
 
 INPUT:
    When the program is executed, it will ask for the filename of the output file.
