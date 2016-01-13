@@ -1,6 +1,6 @@
 Name: Tammy Kong (takong@calpoly.edu), Jordan Tang (jtang22@calpoly.edu)
 Course: CPE369-03
-Assignment: Lab 1-1, BeFuddled
+Assignment: Lab 1-2, beFuddledStats
 
 TO COMPILE:
    A makefile is included, the "make" command should compile the program
@@ -16,8 +16,7 @@ TO RUN BEFUDDLED STATS WITH AN OUTPUT FILE:
 	The output file will be named "outputStats.txt"
 
 INPUT:
-   When the program is executed, it will ask for the filename of the output file.
-   Once this is entered, it will then ask for the number of JSON objects to generate.
+   When the program is executed, it will ask for the filename of the input file.
 
 COMMENTS:
    In order to generate games that favors moves over other actions, 
