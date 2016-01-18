@@ -1,0 +1,3 @@
+{"derpie": 0}
+{"blackie": 1}
+{"snowy": 2}
