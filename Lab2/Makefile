@@ -1,7 +1,5 @@
 default:
 	javac -cp org.json-20120521.jar *.java
-runExp1:
-	java -cp .:org.json-20120521.jar Experiment
 runBF:
 	java -cp .:org.json-20120521.jar BeFuddledGen
 runBFstats:
@@ -14,3 +12,11 @@ runTSstats:
 	java -cp .:org.json-20120521.jar thghtShreStats
 runTSstatsOutput:
        java -cp .:org.json-20120521.jar thghtShreStats outputStats.json
+runExpMem:
+	java -cp .:org.json-20120521.jar ExperimentBFmem
+runExpTime:
+	java -cp .:org.json-20120521.jar ExperimentTime
+runExpShardBF:
+	java -cp .:org.json-20120521.jar ExperimentShardBF
+runExpShardRand:
+	java -cp .:org.json-20120521.jar ExperimentShardRand

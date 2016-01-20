@@ -26,8 +26,8 @@ public class KeyValueStore {
 		limit = -1;
 		//add all of the strings into the hashmap with empty collections
 		ArrayList<String> values = new ArrayList<String>(collection);
-		for(int i = 0; i < value.size(); i++) {
-			store.put(value.get(i), new KVCollection());
+		for(int i = 0; i < values.size(); i++) {
+			store.put(values.get(i), new KVCollection());
 		}
 	}
 
@@ -39,7 +39,7 @@ public class KeyValueStore {
 		if(!premade) {
 			if(checkLimit) {
 				if(store.size() < limit) {
-					if(store.containsKey(name)) {
+					if(!store.containsKey(name)) {
 						store.put(name, new KVCollection());
 						return 1;
 					}
@@ -52,7 +52,7 @@ public class KeyValueStore {
 				}
 			}
 			else {
-				if(store.containsKey(name)) {
+				if(!store.containsKey(name)) {
 					store.put(name, new KVCollection());
 					return 1;
 				}
@@ -80,7 +80,7 @@ public class KeyValueStore {
 	}
 
 	public boolean isEmpty() {
-		return store.isEmpty;
+		return store.isEmpty();
 	}
 
 	public int size() {
@@ -88,7 +88,7 @@ public class KeyValueStore {
 	}
 
 	public int getNumObjects() {
-		ArrayList<KVCollection> collections = new ArrayList<KVCollection>(store.values);
+		ArrayList<KVCollection> collections = new ArrayList<KVCollection>(store.values());
 		int numObjs = 0;
 		for(int i = 0; i < collections.size(); i++) {
 			numObjs += collections.get(i).size();
