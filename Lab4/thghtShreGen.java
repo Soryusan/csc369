@@ -89,11 +89,11 @@ public class thghtShreGen {
       msg.put("messageId", msgId);
       msg.put("user", generateUserId());
       msg.put("status", generateStatus());
-      msg.put("recepient", generateRecepient(msg.getString("status"), msg.getString("user")));
+      msg.put("recipient", generateRecepient(msg.getString("status"), msg.getString("user")));
       
       int isInResponse = RandomUtil.normal(2, 1, 0, 4);
       if (msg.getInt("messageId") > 0 && isInResponse > 2) {
-         msg.put("in-response", generateInResponse(msg.getInt("messageId"), msg.getString("recepient")));
+         msg.put("in-response", generateInResponse(msg.getInt("messageId"), msg.getString("recipient")));
       }
       msg.put("text", generateMsgTxt(inFile));
       return msg;

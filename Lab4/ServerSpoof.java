@@ -26,6 +26,19 @@ import org.bson.*;
 
 public class ServerSpoof {
 	static ThghtShreInfo monitorInfo;
+	static Hashtable<String, ArrayList<String>> seenWords;
+	static Hashtable<String, Boolean> words;
+	static MongoCollection<Document> monitorColl;
+	static Document monitorDoc;
+
+	static long messages;
+	static long newMessages;
+	static int userCount;
+	static BufferedWriter writer = null;
+	static boolean firstPass = true;
+
+
+
 	public static void main(String[] args) {
 		try {
 			JSONTokener t = null;
@@ -33,11 +46,8 @@ public class ServerSpoof {
 			MongoClient client;
 			MongoDatabase db;
 			MongoCollection<Document> dox;
-			MongoCollection<Document> monitorColl;
-			BufferedWriter writer = null;
-			Hashtable<String, Boolean> words = new Hashtable<String, Boolean>();
-			monitorInfo = new ThghtShreInfo();
 			Scanner scanner;
+			Document totalRecord;
 
 			Logger logger = Logger.getLogger("org.mongodb.driver");
 			logger.setLevel(Level.OFF);
@@ -49,10 +59,7 @@ public class ServerSpoof {
 			int delay;
 			int startNdx;
 
-			int userCount;
 			long prevTotal;
-			long messages;
-			long newMessages;
 			long self;
 			long all;
 			long subs;
@@ -60,6 +67,9 @@ public class ServerSpoof {
 			long numPublic;
 			long numPrivate;
 			long numProtected;
+
+			monitorInfo = new ThghtShreInfo();
+			words = new Hashtable<String, Boolean>();
 
 			try {
 				t = new JSONTokener(new FileReader(new File(args[0])));
@@ -97,13 +107,24 @@ public class ServerSpoof {
 			monitorColl.drop();
 			db.createCollection(monitor);
 			monitorColl = db.getCollection(monitor);
+			totalRecord = new Document();
+			totalRecord.append("recordType", "monitor totals");
+			totalRecord.append("msgTotals", new ArrayList<Long>());
+			totalRecord.append("userTotals", new ArrayList<Long>());
+			totalRecord.append("newMsgTotals", new ArrayList<Long>());
+			monitorColl.insertOne(totalRecord);
 			/* *************
 			************** */
 
 			//Read in words from specified file
-			scanner = new Scanner(config.getString("wordFilter"));
-			while(scanner.hasNextLine()) {
-				words.put(scanner.nextLine(), true);
+			try {
+				scanner = new Scanner(new File(config.getString("wordFilter")));
+				while(scanner.hasNextLine()) {
+					String word = scanner.nextLine().trim();
+					words.put(word, true);
+				}
+			} catch(FileNotFoundException e) {
+				System.out.println(e);
 			}
 			delay = checkDelay(config.getInt("delay"));
 			System.out.println("Server Running...");
@@ -116,7 +137,7 @@ public class ServerSpoof {
 					System.out.println(e);
 				}
 				//Obtain necessary information for monitor file
-				JSONObject monitorObj = new JSONObject();
+				monitorDoc = new Document();
 				messages = dox.count();
 				newMessages = messages - prevTotal;
 
@@ -130,6 +151,7 @@ public class ServerSpoof {
 				recObj.put("self", self);
 				recObj.put("subscribers", subs);
 
+				seenWords = new Hashtable<String, ArrayList<String>>();
 				collectInfo(dox);
 				userCount = monitorInfo.getUsers();
 
@@ -141,24 +163,114 @@ public class ServerSpoof {
 				statusObj.put("protected", numProtected);
 				statusObj.put("public", numPublic);
 
-				monitorObj.put("time", (new Date()).toString());
-				monitorObj.put("messages", messages);
-				monitorObj.put("users", userCount);
-				monitorObj.put("new", newMessages);
-				monitorObj.put("statusStats", statusObj);
+				monitorDoc.append("time", (new Date()).toString());
+				monitorDoc.append("messages", messages);
+				monitorDoc.append("users", userCount);
+				monitorDoc.append("new", newMessages);
+				monitorDoc.append("statusStats", statusObj.toString());
 
-				monitorObj.put("recipientStats", getUserRecCount());
-				Document monitorDoc = new Document();
-				monitorDoc.append("Monitor", monitorObj.toString());
+				monitorDoc.append("recipientStats", getUserRecCount(recObj).toString());
 				monitorColl.insertOne(monitorDoc);
+
+				if(!firstPass) {
+					Set<String> keys = seenWords.keySet();
+					try {
+						for(String key : keys) {
+							ArrayList<String> foundMessages = seenWords.get(key);
+							System.out.println("Messages with word " + key);
+							writer.write("Messages with word " + key + "\n");
+							for(String message : foundMessages) {
+								System.out.println(message);
+								writer.write(message + "\n");
+							}
+						}
+						writer.flush();
+					}
+					catch(IOException e) {
+						System.out.println(e);
+					}
+
+				}
+				else {
+					firstPass = false;
+				}
+
 				try {
-					writer.write(monitorObj.toString());
+					writer.write("{" + "\n");
+					writer.write("\ttime: " + monitorDoc.get("time") + "\n");
+					writer.write("\tmessages: " + monitorDoc.get("messages") + "\n");
+					writer.write("\tusers: " + monitorDoc.get("users") + "\n");
+					writer.write("\tnew: " + monitorDoc.get("new") + "\n");
+					writer.write("\tstatusStats: " + monitorDoc.get("statusStats") + "\n");
+					writer.write("\trecipientStats: " + monitorDoc.get("recipientStats") + "\n");
+					writer.write("}" + "\n");
 					writer.flush();
 				}
 				catch(IOException e) {
 					System.out.println(e);
 				}
-				System.out.println(monitorObj.toString(3));
+				System.out.println("{");
+				System.out.println("\ttime: " + monitorDoc.get("time"));
+				System.out.println("\tmessages: " + monitorDoc.get("messages"));
+				System.out.println("\tusers: " + monitorDoc.get("users"));
+				System.out.println("\tnew: " + monitorDoc.get("new"));
+				System.out.println("\tstatusStats: " + monitorDoc.get("statusStats"));
+				System.out.println("\trecipientStats: " + monitorDoc.get("recipientStats"));
+				System.out.println("}");
+
+				monitorDoc = new Document();
+				monitorDoc.append("recordType", "monitor totals");
+				FindIterable<Document> iter = monitorColl.find(monitorDoc);
+
+				iter.forEach(new Block<Document>() {
+					@Override
+					public void apply(final Document document) {
+						ArrayList<Long> totalMessages;
+						ArrayList<Long> totalUsers;
+						ArrayList<Long> totalNewMessages;
+
+						totalMessages = (ArrayList<Long>) document.get("msgTotals");
+						totalUsers = (ArrayList<Long>) document.get("userTotals");
+						totalNewMessages = (ArrayList<Long>) document.get("newMsgTotals");
+
+						totalMessages.add(new Long(messages));
+						totalUsers.add(new Long(userCount));
+						totalNewMessages.add(new Long(newMessages));
+
+						monitorColl.deleteOne(monitorDoc);
+						monitorDoc = new Document();
+						monitorDoc.append("recordType", "monitor totals");
+						monitorDoc.append("msgTotals", totalMessages);
+						monitorDoc.append("userTotals", totalUsers);
+						monitorDoc.append("newMsgTotals", totalNewMessages);
+
+						System.out.println("{");
+						System.out.println("\trecordType: " + monitorDoc.get("recordType"));
+						System.out.println("\trecordType: " + monitorDoc.get("msgTotals"));
+						System.out.println("\tuserTotals: " + monitorDoc.get("userTotals"));
+						System.out.println("\tnewMsgTotals: " + monitorDoc.get("newMsgTotals"));
+						System.out.println("}");
+
+						try {
+							writer.write("{" + "\n");
+							writer.write("\trecordType: " + monitorDoc.get("recordType") + "\n");
+							writer.write("\trecordType: " + monitorDoc.get("msgTotals") + "\n");
+							writer.write("\tuserTotals: " + monitorDoc.get("userTotals") + "\n");
+							writer.write("\tnewMsgTotals: " + monitorDoc.get("newMsgTotals") + "\n");
+							writer.write("}" + "\n");
+							writer.flush();
+						}
+						catch(IOException e) {
+							System.out.println(e);
+						}
+
+						monitorColl.insertOne(monitorDoc);
+					}
+				});
+
+				dox = db.getCollection(collection);
+				prevTotal = messages;
+				seenWords = new Hashtable<String, ArrayList<String>>();
 
 			}
 
@@ -222,12 +334,14 @@ public class ServerSpoof {
 			return delay;
 	}
 
+	//Gets total number of documents for specific query Key
 	public static long getQueryCount(String key, String value, MongoCollection<Document> dox) {
 		Document query = new Document();
 		query.append(key, value);
 		return dox.count(query);
 	}
 
+	//Gets information from each new document in database
 	public static void collectInfo(MongoCollection<Document> dox) {
 		FindIterable<Document> iterable = dox.find();
 		monitorInfo.set();
@@ -237,31 +351,53 @@ public class ServerSpoof {
 				if(monitorInfo.getStart() >= monitorInfo.getTotalMessages()) {
 					monitorInfo.addUser(document.getString("user"));
 					monitorInfo.addTotalMessages();
-					monitorInfo.increStart();
-					if(!document.get("recipient").equals("self") &&
-						!document.get("recipient").equals("all") &&
-						!document.get("recipient").equals("subscribers")) {
-
+					if(!document.getString("recipient").equals("self") &&
+						!document.getString("recipient").equals("all") &&
+						!document.getString("recipient").equals("subscribers")) {
 						monitorInfo.increRecipient(document.getString("recipient"));
 					}
+					findWords(document.getString("text"));
+
 				}
+				monitorInfo.increStart();
 			}
 		});
 	}
-
-	public static JSONObject getUserRecCount() {
+	//Get users who received a message and how many messages they received
+	public static JSONObject getUserRecCount(JSONObject recObj) {
 		ArrayList<String> userIds = monitorInfo.recList();
 		String key;
-		JSONObject recStateObj = new JSONObject();
 		for(int i = 0; i < userIds.size(); i++) {
 			key = userIds.get(i);
 			try {
-				recStateObj.put(key, monitorInfo.getRecMsgCount(key));
+				recObj.put(key, monitorInfo.getRecMsgCount(key));
 			}
 			catch(JSONException e) {
 				System.out.println(e);
 			}
 		}
-		return recStateObj;
+		return recObj;
+	}
+
+	//Finds words that appear message string and query word file
+	public static void findWords(String message) {
+		String[] splitMessage = message.split("\\s+");
+		String curWord;
+		ArrayList<String> messageList;
+		for(int i = 0; i < splitMessage.length; i++) {
+			curWord = splitMessage[i].trim();
+			if(words.containsKey(curWord)) {
+				if(seenWords.containsKey(curWord)) {
+					messageList = seenWords.get(curWord);
+					messageList.add(message);
+					seenWords.put(curWord, messageList);
+				}
+				else {
+					messageList = new ArrayList<String>();
+					messageList.add(message);
+					seenWords.put(curWord, messageList);
+				}
+			}
+		}
 	}
 }

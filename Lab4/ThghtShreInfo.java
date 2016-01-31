@@ -47,7 +47,6 @@ public class ThghtShreInfo {
 
 	public void increRecipient(String rec) {
 
-		
 		if(recipients.contains(rec)) {
 			recipients.put(rec, recipients.get(rec)+1);
 		}
