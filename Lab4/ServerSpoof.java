@@ -131,7 +131,7 @@ public class ServerSpoof {
 			
 			while(true) {
 				try {
-					Thread.sleep(3 * delay);
+					Thread.sleep(3 * delay * 1000);
 				}
 				catch(InterruptedException e) {
 					System.out.println(e);
